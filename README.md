@@ -2,7 +2,7 @@
 
 Este proyecto es una aplicación web para generar recetas usando un modelo de generación de texto de Hugging Face. Los usuarios pueden seleccionar varios ingredientes representados por emojis, y al hacer clic en "Generar Receta", se obtiene una receta basada en los ingredientes seleccionados.
 
-![Captura de pantalla de la aplicación](assets/images/screenshot.png)
+![Captura de pantalla de la aplicación]([assets/images/screenshot.png](https://i.ibb.co/Fsbvyyg/Captura-de-pantalla-2024-09-17-041333.png))
 
 ## Características
 
@@ -17,13 +17,13 @@ Este proyecto es una aplicación web para generar recetas usando un modelo de ge
 1. Clona el repositorio:
 
     ```bash
-    git clone https://github.com/tu_usuario/tu_repositorio.git
+    git clone https://github.com/NaklehZeidan21/Recetas.git
     ```
 
 2. Navega al directorio del proyecto:
 
     ```bash
-    cd tu_repositorio
+    cd Recetas
     ```
 
 3. Instala las dependencias:
@@ -52,6 +52,3 @@ Este proyecto es una aplicación web para generar recetas usando un modelo de ge
 
 Las contribuciones son bienvenidas. Por favor, abre un issue o envía un pull request si encuentras algún error o deseas agregar nuevas funcionalidades.
 
-## Licencia
-
-Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.

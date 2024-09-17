@@ -4,6 +4,9 @@ Este proyecto es una aplicación web para generar recetas usando un modelo de ge
 
 ![Captura de pantalla 2024-09-17 041333](https://github.com/user-attachments/assets/a5ba0774-0a85-49d6-be08-8b2bc22f4d8f)
 
+### Demo
+https://github.com/user-attachments/assets/e79397c7-e75e-47a3-a360-cc32c5b3a705
+
 
 ## Características
 

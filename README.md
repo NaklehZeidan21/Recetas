@@ -2,7 +2,8 @@
 
 Este proyecto es una aplicación web para generar recetas usando un modelo de generación de texto de Hugging Face. Los usuarios pueden seleccionar varios ingredientes representados por emojis, y al hacer clic en "Generar Receta", se obtiene una receta basada en los ingredientes seleccionados.
 
-![Captura de pantalla de la aplicación](Captura de pantalla 2024-09-17 041333.png)
+![Captura de pantalla 2024-09-17 041333](https://github.com/user-attachments/assets/a5ba0774-0a85-49d6-be08-8b2bc22f4d8f)
+
 
 ## Características
 

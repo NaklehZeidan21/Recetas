@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Recetas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+
+        .ingredients-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card.selected {
+            border: 3px solid #28a745;
+        }
+
+        .emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .name {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        #generate-recipe {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #generate-recipe:hover {
+            background-color: #218838;
+        }
+
+        #recipe {
+            margin-top: 40px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #recipe h2 {
+            color: #28a745;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        #recipe p {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        #recipe ul {
+            padding-left: 20px;
+        }
+
+        #recipe ul li {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Loader Styles */
+        #loader {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #28a745;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Selecciona tus ingredientes</h1>
+    <p>Generaremos una receta para ti:</p><br>
+    <div class="ingredients-container">
+
+        <div class="card" data-ingredient="huevo">
+            <div class="emoji">🥚</div>
+            <div class="name">Huevo</div>
+        </div>
+        <div class="card" data-ingredient="tomate">
+            <div class="emoji">🍅</div>
+            <div class="name">Tomate</div>
+        </div>
+        <div class="card" data-ingredient="zanahoria">
+            <div class="emoji">🥕</div>
+            <div class="name">Zanahoria</div>
+        </div>
+        <div class="card" data-ingredient="queso">
+            <div class="emoji">🧀</div>
+            <div class="name">Queso</div>
+        </div>
+        <div class="card" data-ingredient="lechuga">
+            <div class="emoji">🥬</div>
+            <div class="name">Lechuga</div>
+        </div>
+        <div class="card" data-ingredient="pollo">
+            <div class="emoji">🍗</div>
+            <div class="name">Pollo</div>
+        </div>
+        <div class="card" data-ingredient="papa">
+            <div class="emoji">🥔</div>
+            <div class="name">Papa</div>
+        </div>
+        <div class="card" data-ingredient="aguacate">
+            <div class="emoji">🥑</div>
+            <div class="name">Aguacate</div>
+        </div>
+        <div class="card" data-ingredient="fresa">
+            <div class="emoji">🍓</div>
+            <div class="name">Fresa</div>
+        </div>
+        <div class="card" data-ingredient="manzana">
+            <div class="emoji">🍎</div>
+            <div class="name">Manzana</div>
+        </div>
+        <div class="card" data-ingredient="plátano">
+            <div class="emoji">🍌</div>
+            <div class="name">Plátano</div>
+        </div>
+        <div class="card" data-ingredient="piña">
+            <div class="emoji">🍍</div>
+            <div class="name">Piña</div>
+        </div>
+        <div class="card" data-ingredient="uvas">
+            <div class="emoji">🍇</div>
+            <div class="name">Uvas</div>
+        </div>
+        <div class="card" data-ingredient="sandía">
+            <div class="emoji">🍉</div>
+            <div class="name">Sandía</div>
+        </div>
+        <div class="card" data-ingredient="naranja">
+            <div class="emoji">🍊</div>
+            <div class="name">Naranja</div>
+        </div>
+        <div class="card" data-ingredient="limón">
+            <div class="emoji">🍋</div>
+            <div class="name">Limón</div>
+        </div>
+ 
+        <div class="card" data-ingredient="durazno">
+            <div class="emoji">🍑</div>
+            <div class="name">Durazno</div>
+        </div>
+        <div class="card" data-ingredient="maíz">
+            <div class="emoji">🌽</div>
+            <div class="name">Maíz</div>
+        </div>
+        <div class="card" data-ingredient="pan">
+            <div class="emoji">🍞</div>
+            <div class="name">Pan</div>
+        </div>
+
+
+        <div class="card" data-ingredient="arroz">
+            <div class="emoji">🍚</div>
+            <div class="name">Arroz</div>
+        </div>
+
+
+        <div class="card" data-ingredient="chocolate">
+            <div class="emoji">🍫</div>
+            <div class="name">Chocolate</div>
+        </div>
+        <div class="card" data-ingredient="carne">
+            <div class="emoji">🥩</div>
+            <div class="name">Carne</div>
+        </div>
+        <div class="card" data-ingredient="pescado">
+            <div class="emoji">🐟</div>
+            <div class="name">Pescado</div>
+        </div>
+        <div class="card" data-ingredient="langosta">
+            <div class="emoji">🦞</div>
+            <div class="name">Langosta</div>
+        </div>
+        <div class="card" data-ingredient="pulpo">
+            <div class="emoji">🐙</div>
+            <div class="name">Pulpo</div>
+        </div>
+        <div class="card" data-ingredient="camaron">
+            <div class="emoji">🍤</div>
+            <div class="name">Camarón</div>
+        </div>
+
+        <div class="card" data-ingredient="chili">
+            <div class="emoji">🌶️</div>
+            <div class="name">Chili</div>
+        </div>
+
+        <div class="card" data-ingredient="miel">
+            <div class="emoji">🍯</div>
+            <div class="name">Miel</div>
+        </div>
+        <div class="card" data-ingredient="pimiento">
+            <div class="emoji">🫑</div>
+            <div class="name">Pimiento</div>
+        </div>
+        <div class="card" data-ingredient="pepino">
+            <div class="emoji">🥒</div>
+            <div class="name">Pepino</div>
+        </div>
+        <div class="card" data-ingredient="berenjena">
+            <div class="emoji">🍆</div>
+            <div class="name">Berenjena</div>
+        </div>
+        <div class="card" data-ingredient="calabaza">
+            <div class="emoji">🎃</div>
+            <div class="name">Calabaza</div>
+        </div>
+        <div class="card" data-ingredient="mango">
+            <div class="emoji">🥭</div>
+            <div class="name">Mango</div>
+        </div>
+        <div class="card" data-ingredient="coco">
+            <div class="emoji">🥥</div>
+            <div class="name">Coco</div>
+        </div>
+
+        <div class="card" data-ingredient="kiwi">
+            <div class="emoji">🥝</div>
+            <div class="name">Kiwi</div>
+        </div>
+        <div class="card" data-ingredient="miel">
+            <div class="emoji">🍯</div>
+            <div class="name">Miel</div>
+        </div>
+        <div class="card" data-ingredient="nuez">
+            <div class="emoji">🌰</div>
+            <div class="name">Nuez</div>
+        </div>
+        <div class="card" data-ingredient="cereza">
+            <div class="emoji">🍒</div>
+            <div class="name">Cereza</div>
+        </div>
+        <div class="card" data-ingredient="coco">
+            <div class="emoji">🥥</div>
+            <div class="name">Coco</div>
+        </div>
+
+        <div class="card" data-ingredient="Arándanos">
+            <div class="emoji">🫐</div>
+            <div class="name">Arándanos</div>
+        </div>
+        <div class="card" data-ingredient="naranja">
+            <div class="emoji">🍊</div>
+            <div class="name">Naranja</div>
+        </div>
+        <div class="card" data-ingredient="aceituna">
+            <div class="emoji">🫒</div>
+            <div class="name">Aceituna</div>
+        </div>
+        <div class="card" data-ingredient="Melón">
+            <div class="emoji">🍈</div>
+            <div class="name">Melón</div>
+        </div>
+
+  
+        
+        <!-- Agrega más ingredientes según lo necesites -->
+
+
+    </div>
+
+    <button style="margin-top: 5vh;" id="generate-recipe">Generar Receta</button>
+
+    <!-- Loader -->
+    <div id="loader"></div>
+
+    <!-- Contenedor para la receta -->
+    <div id="recipe"></div>
+
+    <script>
+        const selectedIngredients = [];
+
+        // Agregar evento a cada tarjeta para seleccionar el ingrediente
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                const ingredient = card.getAttribute('data-ingredient');
+                
+                // Si el ingrediente no está en el array, lo agrega
+                if (!selectedIngredients.includes(ingredient)) {
+                    selectedIngredients.push(ingredient);
+                    card.classList.add('selected');
+                } else {
+                    // Si el ingrediente ya estaba, lo remueve
+                    selectedIngredients.splice(selectedIngredients.indexOf(ingredient), 1);
+                    card.classList.remove('selected');
+                }
+            });
+        });
+
+        // Enviar los ingredientes seleccionados al backend
+        document.getElementById('generate-recipe').addEventListener('click', async () => {
+            if (selectedIngredients.length === 0) {
+                alert("Por favor selecciona al menos un ingrediente.");
+                return;
+            }
+
+            // Mostrar el loader mientras se procesa la receta
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('recipe').innerHTML = ''; // Limpiar cualquier receta anterior
+
+            try {
+                const response = await fetch('http://localhost:3000/generate-recipe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ selectedIngredients })
+                });
+
+                const data = await response.json();
+
+                // Ocultar el loader cuando llega la respuesta
+                document.getElementById('loader').style.display = 'none';
+
+                // Mostrar la receta en una lista con formato claro
+                const recipeContainer = document.getElementById('recipe');
+                recipeContainer.innerHTML = `<h2>Receta Generada</h2>`;
+                const steps = data.recipe.split('\n');
+                const ul = document.createElement('ul');
+                steps.forEach(step => {
+                    if (step.trim() !== '') {
+                        const li = document.createElement('li');
+                        li.textContent = step;
+                        ul.appendChild(li);
+                    }
+                });
+                recipeContainer.appendChild(ul);
+            } catch (error) {
+                console.error('Error al generar la receta:', error);
+                document.getElementById('recipe').textContent = 'Error al generar la receta.';
+                document.getElementById('loader').style.display = 'none'; // Ocultar loader en caso de error
+            }
+        });
+    </script>
+</body>
+</html>

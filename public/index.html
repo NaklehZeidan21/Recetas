@@ -213,6 +213,7 @@
 
         <div  id="ingredients-container"></div>
 
+
         <div class="card" data-ingredient="huevo">
             <div class="emoji">🥚</div>
             <div class="name">Huevo</div>
@@ -355,8 +356,11 @@
 
     <button id="generate-recipe">Generar Receta</button>
 
-    <i id="refresh-button" style="font-size: 22px; padding: 10px; cursor: pointer;" class="fas fa-sync"></i>
+    <div style="display: flex; justify-content: center;">
+        <i id="refresh-button" style="font-size: 22px; padding: 10px; cursor: pointer;" class="fas fa-sync"></i>
 
+    </div>
+    
 
     <!-- Loader -->
     <div id="loader"></div>
@@ -380,113 +384,147 @@
             <span class="close">&times;</span>
             <h2>Agregar Ingrediente Personalizado</h2>
             <input type="text" id="new-ingredient-name" placeholder="Nombre del ingrediente">
-            <input type="text" id="new-ingredient-emoji" placeholder="Emoji del ingrediente" disabled value="😊">
-            <button id="add-ingredient-button">Agregar Ingrediente</button>
+           <!-- <input type="text" id="new-ingredient-emoji" placeholder="Emoji del ingrediente" disabled value="😊">
+        --> 
+           <button id="add-ingredient-button">Agregar Ingrediente</button>
         </div>
     </div>
 
     <script>
         const selectedIngredients = [];
         const ingredientContainer = document.getElementById('ingredients-container');
-
-        // Show modal - add
+    
+        // Mostrar 
         document.getElementById('add-ingredient').addEventListener('click', () => {
             document.getElementById('add-ingredient-modal').style.display = 'flex';
         });
-
-        // Close modal
-        document.querySelector('.modal-content .close').addEventListener('click', () => {
+    
+        // Cerrar
+                document.querySelector('.modal-content .close').addEventListener('click', () => {
             document.getElementById('add-ingredient-modal').style.display = 'none';
         });
+    
 
-        // Add ingredient
-        document.getElementById('add-ingredient-button').addEventListener('click', () => {
-            const name = document.getElementById('new-ingredient-name').value.trim();
-            const emoji = document.getElementById('new-ingredient-emoji').value.trim();
+        document.addEventListener('DOMContentLoaded', () => {
+    const ingredientContainer = document.getElementById('ingredients-container');
 
-            if (name && emoji) {
-                // Create and add new card
-                const newCard = document.createElement('div');
-                newCard.className = 'card';
-                newCard.dataset.ingredient = name;
-                newCard.innerHTML = `<div class="emoji">${emoji}</div><div class="name">${name}</div>`;
-                
-                ingredientContainer.appendChild(newCard);
-
-                // Add click event to new card
-                newCard.addEventListener('click', () => {
-                    toggleIngredientSelection(newCard);
-                });
-
-                // Clear modal
-                document.getElementById('new-ingredient-name').value = '';
-                document.getElementById('new-ingredient-emoji').value = '😊';
-                document.getElementById('add-ingredient-modal').style.display = 'none';
-            }
-        });
-
-        document.getElementById('generate-recipe').addEventListener('click', async () => {
-    if (selectedIngredients.length < 4) {
-        alert('Por favor selecciona al menos 4 ingredientes.');
+    if (!ingredientContainer) {
+        console.error('El contenedor de ingredientes no se encuentra en el DOM.');
         return;
     }
 
-    document.getElementById('loader').style.display = 'block';
+    document.getElementById('add-ingredient-button').addEventListener('click', () => {
+        const name = document.getElementById('new-ingredient-name').value.trim();
+        
+        // Lista de emojis
+        const emojis = [
+            '🫃🏽', '👩🏾‍🦽‍➡️', '⛓️‍💥', '💯', '🧪', '🩻', 
+            '🌮', '🌯', '🌰',
+        ];
 
-    try {
-        const response = await fetch('/generate-recipe', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ selectedIngredients }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        // Función para obtener un emoji aleatorio
+        function getRandomEmoji() {
+            const randomIndex = Math.floor(Math.random() * emojis.length);
+            return emojis[randomIndex];
         }
 
-        const data = await response.json();
-        document.getElementById('recipe').style.display = 'block';
+        // Ejemplo de uso
+        const emoji = getRandomEmoji();
+        console.log('Emoji aleatorio:', emoji);
 
-        const recipeContainer = document.getElementById('recipe');
-        const recipeImage = document.getElementById('recipe-image');
-        const imageElement = document.getElementById('recipe-image-img');
+        console.log('Nombre del ingrediente:', name);
+        console.log('Emoji del ingrediente:', emoji);
 
-        const { title, ingredients, instructions, image } = data;
+        if (name && emoji) {
+            const newCard = document.createElement('div');
+            newCard.className = 'card';
+            newCard.dataset.ingredient = name;
+            newCard.innerHTML = `<div class="emoji">${emoji}</div><div class="name">${name}</div>`;
 
-        recipeContainer.innerHTML = `
-            <h2 class="title">${title}</h2>
-            <div class="ingredients">
-                <strong>Ingredientes:</strong>
-                <ul>${ingredients.map(ingredient => `<li><strong>${ingredient.nombre}:</strong> ${ingredient.cantidad}</li>`).join('')}</ul>
-            </div>
-            <div class="instructions">
-                <strong>Instrucciones:</strong>
-        <ul>
-            ${instructions.map((instruction, index) => `<li> ${instruction}</li>`).join('')}
-        </ul>
-            </div>
-        `;
+            // Inserta la nueva tarjeta en la primera posición
+            ingredientContainer.insertBefore(newCard, ingredientContainer.firstChild);
 
-        if (image) {
-            imageElement.src = `${image}`;
-            recipeImage.style.display = 'block';
+            // Verifica si la tarjeta ha sido añadida
+            console.log('Nueva tarjeta añadida:', newCard);
+
+            // Añadir evento de selección a la tarjeta nueva
+            newCard.addEventListener('click', () => {
+                toggleIngredientSelection(newCard);
+            });
+
+            // Limpiar modal
+            document.getElementById('new-ingredient-name').value = '';
+            document.getElementById('add-ingredient-modal').style.display = 'none';
+            ingredientContainer.style.display = 'flex'; 
+
         } else {
-            recipeImage.style.display = 'none';
+            console.log('Faltan valores');
         }
-
-    } catch (error) {
-        console.error('Error:', error);
-    } finally {
-        document.getElementById('loader').style.display = 'none';
-    }
+    });
 });
 
-
-
-
-
+        // Generar receta
+        document.getElementById('generate-recipe').addEventListener('click', async () => {
+            if (selectedIngredients.length < 5) {
+                alert('Por favor selecciona al menos 5 ingredientes.');
+                return;
+            }
+    
+            document.getElementById('loader').style.display = 'block';
+            window.scrollBy({
+            top: 120,
+            behavior: 'smooth'
+        });
+    
+            try {
+                const response = await fetch('/generate-recipe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ selectedIngredients }),
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+    
+                const data = await response.json();
+                document.getElementById('recipe').style.display = 'block';
+    
+                const recipeContainer = document.getElementById('recipe');
+                const recipeImage = document.getElementById('recipe-image');
+                const imageElement = document.getElementById('recipe-image-img');
+    
+                const { title, ingredients, instructions, image } = data;
+    
+                recipeContainer.innerHTML = `
+                    <h2 class="title">${title}</h2>
+                    <div class="ingredients">
+                        <strong>Ingredientes:</strong>
+                        <ul>${ingredients.map(ingredient => `<li><strong>${ingredient.nombre}:</strong> ${ingredient.cantidad}</li>`).join('')}</ul>
+                    </div>
+                    <div class="instructions">
+                        <strong>Instrucciones:</strong>
+                        <ul>${instructions.map((instruction, index) => `<li> ${instruction}</li>`).join('')}</ul>
+                    </div>
+                `;
+    
+                if (image) {
+                    imageElement.src = `${image}`;
+                    recipeImage.style.display = 'block';
+                } else {
+                    recipeImage.style.display = 'none';
+                }
+    
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        });
+    
+        // Función para alternar la selección de ingredientes
         function toggleIngredientSelection(card) {
             const ingredient = card.dataset.ingredient;
             if (selectedIngredients.includes(ingredient)) {
@@ -497,37 +535,23 @@
                 card.classList.add('selected');
             }
         }
-
-
-
+    
+        // Refrescar la página
         document.getElementById('refresh-button').addEventListener('click', () => {
             location.reload();
         });
-
-        // Inicializa la vista
+    
+        // Inicializar la vista ocultando la receta
         document.getElementById('recipe').style.display = 'none';
     
-
-        // Toggle ingredient selection
-        function toggleIngredientSelection(card) {
-            const ingredient = card.getAttribute('data-ingredient');
-        
-            if (!selectedIngredients.includes(ingredient)) {
-                selectedIngredients.push(ingredient);
-                card.classList.add('selected');
-            } else {
-                selectedIngredients.splice(selectedIngredients.indexOf(ingredient), 1);
-                card.classList.remove('selected');
-            }
-        }
-        
-        //  predefined ingredients
+        // Alternar selección de ingredientes para los ingredientes predefinidos
         document.querySelectorAll('.card[data-ingredient]').forEach(card => {
             card.addEventListener('click', () => {
                 toggleIngredientSelection(card);
             });
         });
-        </script>
+    </script>
+    
         
 </body>
 </html>

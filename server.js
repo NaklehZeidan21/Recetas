@@ -29,8 +29,8 @@ app.post('/generate-recipe', async (req, res) => {
         selectedIngredients = [];
     }
 
-    if (selectedIngredients.length < 4) {
-        return res.status(400).json({ error: 'Agrega al menos 4 ingredientes.' });
+    if (selectedIngredients.length < 5) {
+        return res.status(400).json({ error: 'Agrega al menos 5 ingredientes.' });
     }
 
     const prompt = `Genera una receta con los siguientes ingredientes: ${selectedIngredients.join(', ')}. Devuelve el resultado en formato JSON con la estructura: 

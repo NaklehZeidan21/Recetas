@@ -3,37 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <title>Generador de Recetas</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: black;
+            background-color: #f8f9fa;
             color: #333;
             text-align: center;
             margin: 0;
-            padding: 10px;
+            padding: 20px;
         }
-
-   
 
         h1 {
             font-size: 2.5rem;
-            color: white;
+            color: #343a40;
             margin-bottom: 20px;
         }
 
         #ingredients-container {
-            display: none;
+            display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 10px;
-            
         }
 
         .card {
-            background-color: #858585;
+            background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100px;
@@ -45,12 +40,11 @@
         }
 
         .card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
         }
 
         .card.selected {
-            background-color: #517741;
-
+            border: 3px solid #28a745;
         }
 
         .emoji {
@@ -60,31 +54,43 @@
 
         .name {
             font-size: 1rem;
-            color: #131212;
+            color: #555;
         }
 
-        #generate-recipe {
+        #generate-recipe, #clear-selection {
             margin-top: 20px;
             padding: 10px 20px;
             font-size: 1.2rem;
-            background-color: #517741;
-            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        #generate-recipe {
+            background-color: #28a745;
+            color: white;
         }
 
         #generate-recipe:hover {
             background-color: #218838;
         }
 
-        .ingredients-container {
-    display: flex;
-    flex-wrap: wrap; 
-    justify-content: center;
-    gap: 10px; 
-}
+        #clear-selection {
+            background-color: #dc3545;
+            color: white;
+            margin-left: 10px;
+        }
 
+        #clear-selection:hover {
+            background-color: #c82333;
+        }
+
+        .ingredients-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
 
         #recipe {
             margin-top: 40px;
@@ -96,7 +102,6 @@
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: none;
         }
 
         #recipe h2 {
@@ -117,6 +122,7 @@
             line-height: 1.6;
         }
 
+        /* Loader Styles */
         #loader {
             display: none;
             border: 8px solid #f3f3f3;
@@ -133,6 +139,7 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Estilos del Modal */
         #add-ingredient-modal {
             display: none;
             position: fixed;
@@ -168,13 +175,13 @@
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
-            background-color: #517741;
+            background-color: #28a745;
             color: #fff;
             cursor: pointer;
         }
 
         .modal-content button:hover {
-            background-color: #517741;
+            background-color: #218838;
         }
 
         .modal-content .close {
@@ -185,40 +192,26 @@
             cursor: pointer;
         }
 
-      
-
-        @media (max-width: 450px) {
-    .card {
-        width: 80px; 
-        height: auto;
-        display: inline-block; 
-        margin: 5px;
-    }
-}
-
-
+        /* Para pantallas pequeñas (dispositivos móviles) */
     </style>
 </head>
 <body>
 
     <h1>Selecciona tus ingredientes</h1>
-    <p style="color: rgba(255, 255, 255, 0.66);">Generaremos una receta para ti:</p><br>
+    <p>Generaremos una receta para ti:</p><br>
     <div class="ingredients-container">
-        
-
         <div class="card" id="add-ingredient">
             <div class="emoji">➕</div>
-            <div style="font-size: 14px; " class="name">Agregar Ingrediente</div>
+            <div class="name">Agregar Ingrediente</div>
         </div>
 
-        <div  id="ingredients-container"></div>
+        <div id="ingredients-container"></div>
 
         <div class="card" data-ingredient="huevo">
             <div class="emoji">🥚</div>
             <div class="name">Huevo</div>
         </div>
-
-
+        <!-- Agrega aquí los otros ingredientes predefinidos -->
         <div class="card" data-ingredient="tomate">
             <div class="emoji">🍅</div>
             <div class="name">Tomate</div>
@@ -352,28 +345,17 @@
             <div class="name">Mango</div>
         </div>
     </div>
+        <!-- Ingredientes predefinidos aquí -->
+    </div>
 
     <button id="generate-recipe">Generar Receta</button>
-
-    <i id="refresh-button" style="font-size: 22px; padding: 10px; cursor: pointer;" class="fas fa-sync"></i>
-
+    <button id="clear-selection">Limpiar</button>
 
     <!-- Loader -->
     <div id="loader"></div>
 
-    
     <!-- Contenedor para la receta -->
     <div id="recipe"></div>
-    
-    <div id="recipe-image" style="display: none;">
-        <h3>Imagen Generada:</h3>
-        <div style="display: flex; justify-content: center;">
-            <img id="recipe-image-img" alt="Imagen de la receta" style="max-width: 100%; border-radius: 10px;">
-
-        </div>
-    </div>
-
-    
 
     <!-- Modal para agregar ingredientes personalizados -->
     <div id="add-ingredient-modal">
@@ -389,151 +371,103 @@
     <script>
         const selectedIngredients = [];
         const ingredientContainer = document.getElementById('ingredients-container');
-        
-        // Show modal - add
+
+        // Mostrar el modal para agregar ingredientes
         document.getElementById('add-ingredient').addEventListener('click', () => {
             document.getElementById('add-ingredient-modal').style.display = 'flex';
         });
-        
-        //  modal
+
+        // Cerrar el modal
         document.querySelector('.modal-content .close').addEventListener('click', () => {
             document.getElementById('add-ingredient-modal').style.display = 'none';
         });
-        
-        // add ingredient
+
+        // Agregar ingrediente personalizado
         document.getElementById('add-ingredient-button').addEventListener('click', () => {
             const name = document.getElementById('new-ingredient-name').value.trim();
             const emoji = document.getElementById('new-ingredient-emoji').value.trim();
 
-            document.getElementById('ingredients-container').style.display = 'flex';
-
-
             if (name && emoji) {
-
-                // create + add
+                // Crear y agregar la nueva tarjeta de ingrediente
                 const newCard = document.createElement('div');
                 newCard.className = 'card';
                 newCard.dataset.ingredient = name;
                 newCard.innerHTML = `<div class="emoji">${emoji}</div><div class="name">${name}</div>`;
-        
+
+                // Agregar la nueva tarjeta al final del contenedor de ingredientes
                 ingredientContainer.appendChild(newCard);
-        
-                // click event 
+
+                // Agregar evento de clic para seleccionar el nuevo ingrediente
                 newCard.addEventListener('click', () => {
-                    toggleIngredientSelection(newCard);
+                    const ingredient = newCard.getAttribute('data-ingredient');
+
+                    if (!selectedIngredients.includes(ingredient)) {
+                        selectedIngredients.push(ingredient);
+                        newCard.classList.add('selected');
+                    } else {
+                        selectedIngredients.splice(selectedIngredients.indexOf(ingredient), 1);
+                        newCard.classList.remove('selected');
+                    }
                 });
-        
-                //Clear modal 
+
+                // Limpiar el formulario del modal
                 document.getElementById('new-ingredient-name').value = '';
                 document.getElementById('new-ingredient-emoji').value = '😊';
                 document.getElementById('add-ingredient-modal').style.display = 'none';
             }
         });
-        
-        // gen
 
+        // Generar receta
         document.getElementById('generate-recipe').addEventListener('click', async () => {
-    if (selectedIngredients.length < 4) {
-        alert('Por favor selecciona al menos 4 ingredientes.');
-        return;
-    }
+            if (selectedIngredients.length < 4) {
+                alert('Por favor, selecciona al menos 4 ingredientes.');
+                return;
+            }
 
-    document.getElementById('loader').style.display = 'block';
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('recipe').innerHTML = '';
 
-    try {
-        const response = await fetch('/generate-recipe', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ selectedIngredients }),
+            const response = await fetch('/generate-recipe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ingredients: selectedIngredients })
+            });
+
+            const data = await response.json();
+            document.getElementById('recipe').innerHTML = `
+                <h2 class="title">${data.title}</h2>
+                <div class="ingredients"><strong>Ingredientes:</strong><br>${data.ingredients}</div>
+                <div class="instructions"><strong>Instrucciones:</strong><br>${data.instructions}</div>
+            `;
+
+            document.getElementById('loader').style.display = 'none';
         });
 
-        if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        document.getElementById('recipe').style.display = 'block';
-
-        const recipeContainer = document.getElementById('recipe');
-        const recipeImage = document.getElementById('recipe-image');
-        const imageElement = document.getElementById('recipe-image-img');
-
-        const title = data.title || 'Título desconocido';
-        const ingredients = Array.isArray(data.ingredients) ? data.ingredients.map(ingredient => {
-            return ingredient.nombre && ingredient.cantidad ? 
-                `<li><b>${ingredient.nombre}:</b> ${ingredient.cantidad}</li>` 
-                : `<li><b>${ingredient.nombre}:</b> ${ingredient.cantidad}</li>`;
-        }).join('') : `<li><b>${ingredient.nombre}:</b> ${ingredient.cantidad}</li>`;
-
-        const instructions = Array.isArray(data.instructions) 
-            ? data.instructions.map((instruction, index) => {
-                return instruction ? 
-                    `<li><b>Paso ${index + 1}:</b> ${instruction}</li>` 
-                    : '<li><b>Paso ${index + 1}:</b> ${instruction}</li>';
-            }).join('') 
-            : '<li><b>Paso ${index + 1}:</b> ${instruction}</li>';
-
-        recipeContainer.innerHTML = `
-            <h2>${title}</h2>
-            <h3>Ingredientes:</h3>
-            <ul>${ingredients}</ul>
-            <h3>Instrucciones:</h3>
-            <ul>${instructions}</ul>
-        `;
-
-        if (data.image) {
-            console.log('Imagen URL:', data.image); 
-            imageElement.src = data.image;
-            recipeImage.style.display = 'block'; 
-        } else {
-            recipeImage.style.display = 'none';
-        }
-
-        document.getElementById('loader').style.display = 'none';
-    } catch (error) {
-        console.error('Error al generar la receta:', error);
-        document.getElementById('loader').style.display = 'none';
-        alert(`Hubo un problema al generar la receta. Intenta de nuevo más tarde.\nError: ${error.message}`);
-    }
-});
-
-// Refresh button
-document.getElementById('refresh-button').addEventListener('click', () => {
-    selectedIngredients.length = 0;
-    document.querySelectorAll('.card.selected').forEach(card => card.classList.remove('selected'));
-    document.getElementById('ingredients-container').innerHTML = '';
-    document.getElementById('recipe').style.display = 'none';
-    
-    // Clear recipe image
-    const recipeImage = document.getElementById('recipe-image');
-    const imageElement = document.getElementById('recipe-image-img');
-    imageElement.src = ''; 
-    recipeImage.style.display = 'none'; 
-});
-
-
-        // Toggle ingredient selection
-        function toggleIngredientSelection(card) {
-            const ingredient = card.getAttribute('data-ingredient');
-        
-            if (!selectedIngredients.includes(ingredient)) {
-                selectedIngredients.push(ingredient);
-                card.classList.add('selected');
-            } else {
-                selectedIngredients.splice(selectedIngredients.indexOf(ingredient), 1);
+        // Limpiar selección de ingredientes
+        document.getElementById('clear-selection').addEventListener('click', () => {
+            selectedIngredients.length = 0;
+            document.querySelectorAll('.card').forEach(card => {
                 card.classList.remove('selected');
-            }
-        }
-        
-        //  predefined ingredients
-        document.querySelectorAll('.card[data-ingredient]').forEach(card => {
-            card.addEventListener('click', () => {
-                toggleIngredientSelection(card);
             });
         });
-        </script>
-        
+
+        // Seleccionar/deseleccionar ingredientes
+        ingredientContainer.addEventListener('click', (event) => {
+            const card = event.target.closest('.card');
+            if (card && card.id !== 'add-ingredient') {
+                const ingredient = card.getAttribute('data-ingredient');
+
+                if (!selectedIngredients.includes(ingredient)) {
+                    selectedIngredients.push(ingredient);
+                    card.classList.add('selected');
+                } else {
+                    selectedIngredients.splice(selectedIngredients.indexOf(ingredient), 1);
+                    card.classList.remove('selected');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

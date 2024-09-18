@@ -1,9 +1,16 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const bodyParser = require('body-parser');
-const { HfInference } = require('@huggingface/inference');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bodyParser from 'body-parser';
+import { HfInference } from '@huggingface/inference';
+import dotenv from 'dotenv';
+import fetch from 'node-fetch';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
@@ -13,8 +20,6 @@ const hfInference = new HfInference(process.env.HF_TOKEN);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-// ger recipt POST
 app.post('/generate-recipe', async (req, res) => {
     let { selectedIngredients } = req.body;
 
@@ -24,14 +29,19 @@ app.post('/generate-recipe', async (req, res) => {
         selectedIngredients = [];
     }
 
-    // CHECK ARRAY
     if (selectedIngredients.length < 4) {
         return res.status(400).json({ error: 'Agrega al menos 4 ingredientes.' });
     }
 
-    const prompt = `Genera una receta con los siguientes ingredientes y su cantidad necesaria ya sea en peso, tamaño, etc: ${selectedIngredients.join(', ')}. Devuelve la receta en formato JSON con los campos "titulo", "ingredientes" e "instrucciones".`;
+    const prompt = `Genera una receta con los siguientes ingredientes: ${selectedIngredients.join(', ')}. Devuelve el resultado en formato JSON con la estructura: 
+        {
+            title: "",
+            ingredients: [{ nombre: "", cantidad: "" }],
+            instructions: [""]
+        }`;
 
     try {
+        // Generar receta usando Hugging Face
         const response = await hfInference.chatCompletion({
             model: "microsoft/Phi-3-mini-4k-instruct",
             messages: [{ role: "user", content: prompt }],
@@ -39,59 +49,59 @@ app.post('/generate-recipe', async (req, res) => {
         });
 
         const recipeContent = response.choices[0]?.message?.content || '{}';
-        console.log('Contenido del JSON:', recipeContent);
-
         let recipeData = {
             title: "Receta Generada",
-            ingredients: selectedIngredients,
-            instructions: "No se pudo procesar las instrucciones."
-        };
+            ingredients: selectedIngredients.map(ingredient => ({ nombre: ingredient, cantidad: "No especificada" })),
+            instructions: ["No se pudo procesar las instrucciones."],
+            image: ""         };
 
-        try {
-            const jsonMatch = recipeContent.match(/```json\s*([\s\S]*?)\s*```/);
-            if (jsonMatch) {
-                const jsonString = jsonMatch[1].trim();
-                const cleanedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+        const jsonMatch = recipeContent.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+            const jsonString = jsonMatch[1].trim();
+            const cleanedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
 
-                try {
-                    const parsedData = JSON.parse(cleanedJsonString);
+            const parsedData = JSON.parse(cleanedJsonString);
 
-                    recipeData = {
-                        title: parsedData.titulo || recipeData.title,
-                        ingredients: parsedData.ingredientes || recipeData.ingredients,
-                        instructions: parsedData.instrucciones || recipeData.instructions
-                    };
-                } catch (parseError) {
-                    console.error('Error al procesar la respuesta JSON:', parseError);
-                }
-            }
-        } catch (matchError) {
-            console.error('Error al extraer JSON:', matchError);
+            recipeData = {
+                title: parsedData.title || recipeData.title,
+                ingredients: parsedData.ingredients ? parsedData.ingredients.map(ingredient => ({
+                    nombre: ingredient.nombre || '',
+                    cantidad: ingredient.cantidad || 'No especificada'
+                })) : recipeData.ingredients,
+                instructions: parsedData.instructions || recipeData.instructions,
+                image: "" 
+            };
         }
 
-        //  dynamic import for node-fetch = deprecado
-        const { default: fetch } = await import('node-fetch');
+        // Generar imagen después de generar la receta
+        const imagePrompt = `Generar una imagen para un plato de esta receta: ${recipeData.title}`;
 
-        // txt to img
         const imageResponse = await fetch(
-            "https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4",
+            "https://api-inference.huggingface.co/models/ZB-Tech/Text-to-Image",
             {
                 headers: {
                     Authorization: `Bearer ${process.env.HF_TOKEN}`,
                     "Content-Type": "application/json",
                 },
                 method: "POST",
-                body: JSON.stringify({ inputs: "Generar una imagen en plato de esta receta:"+ recipeData.title }),
+                body: JSON.stringify({ inputs: imagePrompt }),
             }
         );
-        const imageBlob = await imageResponse.buffer();
-        const imageBase64 = imageBlob.toString('base64');
-        recipeData.image = `data:image/png;base64,${imageBase64}`;
 
+        if (imageResponse.ok) {
+            const imageBlob = await imageResponse.buffer();
+            const imageBase64 = imageBlob.toString('base64');
+            recipeData.image = `data:image/png;base64,${imageBase64}`; 
+        } else {
+            console.error('Error al generar la imagen:', await imageResponse.text());
+        }
+
+        // Enviar receta completa
         res.json(recipeData);
+
     } catch (error) {
         console.error('Error al generar la receta:', error);
-        res.status(500).send('Error al generar la receta. Asegúrate de que el servicio de Hugging Face esté disponible y que tu conexión a Internet esté funcionando correctamente.');
+        res.status(500).send('Error al generar la receta.');
     }
 });
 

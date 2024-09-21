@@ -324,6 +324,12 @@
         display: inline-block; 
         margin: 5px;
     }
+    .logo {
+    font-size: 22px;
+    font-weight: bold;
+    margin-right: auto; 
+    margin-top: 1vh;
+}
 }
 
 
@@ -845,6 +851,13 @@ document.getElementById('submitRegister').addEventListener('click', async functi
 // Generar receta
 document.getElementById('generate-recipe').addEventListener('click', async () => {
     if (selectedIngredients.length < 5) {
+                // Verifica si el token está en localStorage
+                const token = localStorage.getItem('token');
+        if (!token) {
+            showError("No has iniciado sesión. Por favor inicia sesión para generar una receta.");
+            document.getElementById('loader').style.display = 'none';
+            return;
+        }
         showError("Por favor selecciona al menos 5 ingredientes");
         return;
     }

@@ -20,6 +20,11 @@ const Recipe = sequelize.define('Recipe', {
         type: DataTypes.TEXT('long'),
         allowNull: true,
     },
+    shareId: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: true, // Permitir nulo inicialmente
+    },
 }, {
     timestamps: true,
 });

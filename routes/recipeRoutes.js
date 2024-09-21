@@ -1,6 +1,6 @@
 // routes/recipeRoutes.js
 import express from 'express';
-import { generateAndSaveRecipe, getUserRecipes, deleteRecipe } from '../controllers/recipeController.js';
+import { generateAndSaveRecipe, getUserRecipes, deleteRecipe, shareRecipe, getSharedRecipe} from '../controllers/recipeController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -18,6 +18,15 @@ router.get('/my-recipes', authMiddleware, (req, res) => {
 
 //api
 router.delete('/recipes/:recipeId', authMiddleware, deleteRecipe);
+
+
+// Ruta para compartir una receta
+router.post('/share/:recipeId', authMiddleware, shareRecipe);
+
+
+// Ruta para acceder a una receta compartida
+router.get('/shared/:shareId', getSharedRecipe);
+
 
 
 export default router;

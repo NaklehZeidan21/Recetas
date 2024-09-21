@@ -358,12 +358,17 @@
     color: #333;
 }
 
-.delete-btn {
+.delete-btn, .share-btn {
     background: none;
-    border: none;
+    border: .02 solid black;
+    border-radius: 5px;
     cursor: pointer;
 }
 
+.delete-btn:hover, .share-btn:hover{
+    background: rgb(197, 197, 197);
+  
+}
 .delete-btn img {
     width: 20px; 
     height: 20px;
@@ -444,6 +449,15 @@
     </div>
 </div>
 
+<div id="shareModal" class="modal">
+    <div class="modal-content small">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Comparte la Receta</h2>
+        <p onclick="copyToClipboard()" style="cursor: pointer;" id="shareUrlText"></p>
+        <button onclick="copyToClipboard()">Copiar url</button>
+    </div>
+</div>
+
 
 <main>
     <h2>Tus recetas:</h2>
@@ -490,6 +504,40 @@
             document.body.removeChild(errorContainer);
         }, 3000);
     }
+
+
+    
+        // Función para mostrar mensajes de éxito en el DOM y ocultarlos después de 2 segundos
+        function showSuccess(message) {
+          let successContainer = document.getElementById('success-container');
+          if (!successContainer) {
+            successContainer = document.createElement('div');
+            successContainer.id = 'success-container';
+            successContainer.style.backgroundColor = '#4caf50'; // Fondo verde
+            successContainer.style.color = 'white';
+            successContainer.style.padding = '15px'; // Aumenta el padding
+            successContainer.style.marginTop = '10px';
+            successContainer.style.borderRadius = '5px';
+            successContainer.style.fontSize = '18px'; // Aumenta el tamaño de la fuente
+            successContainer.style.fontWeight = 'bold';
+            successContainer.style.textAlign = 'center';
+            successContainer.style.position = 'fixed';
+            successContainer.style.top = '20px';
+            successContainer.style.left = '50%';
+            successContainer.style.transform = 'translateX(-50%)';
+            successContainer.style.zIndex = '1000';
+            successContainer.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)'; // Agrega sombra
+            document.body.prepend(successContainer);
+          }
+          successContainer.innerText = message;
+      
+          // Mostrar el mensaje y luego ocultarlo
+          successContainer.style.display = 'block';
+          setTimeout(() => {
+            successContainer.style.display = 'none';
+          }, 2000);
+        }
+      
 </script>
 
 
@@ -568,26 +616,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById('no-recipes').style.display = 'block';
                 return;
             }
+// Dentro de la función que carga las recetas
+data.forEach(recipe => {
+    const recipeCard = document.createElement('div');
+    recipeCard.classList.add('recipe-card');
+    recipeCard.setAttribute('data-id', recipe.id);
+    recipeCard.innerHTML = `
+        <h3>${recipe.title}</h3>
+        <br>
+        <img style="width:120px; height:120px;" src="${recipe.image}">
+        <br>
+        <br>
+        <small>${recipe.createdAt}</small>
+        <hr>
+        <b>${recipe.id}</b>      
+        <hr>                       
+        <div style='display:flex; justify-content:space-between;'>
+        <br><button class="delete-btn" data-recipe-id="${recipe.id}">Eliminar         <i class="delete-btn" data-recipe-id="${recipe.id}">🗑️</i></button>
+        <br><button class="share-btn" data-recipe-id-share="${recipe.id}">Compartir         <i class="share-btn" data-recipe-id-share="${recipe.id}">🔁</i></button>
+        </div>
 
-            data.forEach(recipe => {
-                const recipeCard = document.createElement('div');
-                recipeCard.classList.add('recipe-card');
-                recipeCard.setAttribute('data-id', recipe.id);
-                recipeCard.innerHTML = `
-                    <h3>${recipe.title}</h3>
-                    <br>
-                    <img style="width:120px; height:120px;" src="${recipe.image}">
-                    
-                      <br>
-                      <br>
-                            <small>${recipe.createdAt}</small>
-                          
-                    <hr>                       
-                    <br><button class="delete-btn" data-recipe-id="${recipe.id}">Eliminar</button>
-                    <i class="delete-btn" data-recipe-id="${recipe.id}">🗑️</i>
-                `;
-                recipeList.appendChild(recipeCard);
-            });
+    `;
+    recipeList.appendChild(recipeCard);
+});
+
+// Añadir evento para el botón de compartir
+document.querySelectorAll('.share-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+        const recipeId = event.target.getAttribute('data-recipe-id-share');
+       // alert(`Receta compartida con ID: ${recipeId}`); // Aquí puedes implementar tu lógica para compartir
+        shareRecipe(recipeId)
+        // Lógica para compartir la receta (por ejemplo, abrir un enlace o compartir a través de redes sociales)
+    });
+});
+
+
+            
 
             // Añadir eventos a los botones de eliminar
             document.querySelectorAll('.delete-btn').forEach(button => {
@@ -625,6 +689,62 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+</script>
+
+
+<script>
+
+
+async function shareRecipe(recipeId) {
+    try {
+        // Retrieve token from local storage
+        const token = localStorage.getItem('token');
+
+        const response = await fetch(`/api/share/${recipeId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Include the token in the headers
+            },
+            body: JSON.stringify({ recipeId }) // If you need to send the recipeId in the body
+        });
+
+        if (response.ok) {
+            const data = await response.json(); // Assuming the response returns JSON
+          //  alert(data.shareUrl);
+            showModal(data.shareUrl)
+  
+  
+        } else {
+            alert('Error al compartir la receta');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+
+function showModal(shareUrl) {
+    const modal = document.getElementById('shareModal');
+    const shareUrlText = document.getElementById('shareUrlText');
+    
+    shareUrlText.textContent = shareUrl; // Set the share URL in the modal
+    modal.style.display = 'block'; // Show the modal
+}
+
+function closeModal() {
+    const modal = document.getElementById('shareModal');
+    modal.style.display = 'none'; // Hide the modal
+}
+
+function copyToClipboard() {
+    const shareUrlText = document.getElementById('shareUrlText').textContent;
+    navigator.clipboard.writeText(shareUrlText).then(() => {
+        showSuccess('Link copiado al portapapeles');
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+    });
+}
 </script>
 </body>
 </html>

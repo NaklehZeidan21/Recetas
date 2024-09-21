@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { HfInference } from '@huggingface/inference';
 import dotenv from 'dotenv';
 import Recipe from '../models/Recipe.js';
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -141,6 +142,56 @@ export const getUserRecipes = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener recetas.' });
     }
 };
+
+
+
+
+// Controlador para compartir recetas
+export const shareRecipe = async (req, res) => {
+    const { recipeId } = req.params; // ID de la receta a compartir
+    const userId = req.userId; // ID del usuario autenticado
+
+    try {
+        // Verificar que la receta pertenece al usuario
+        const recipe = await Recipe.findOne({ where: { id: recipeId, userId } });
+
+        if (!recipe) {
+            return res.status(403).json({ error: 'No tienes permiso para compartir esta receta.' });
+        }
+
+        // Generar un ID único para la receta compartida
+        const shareId = uuidv4();
+
+        // Guardar el ID en la receta para su acceso público
+        recipe.shareId = shareId; // Asegúrate de que tu modelo permite este campo
+        await recipe.save();
+
+        const shareUrl = `${req.protocol}://${req.get('host')}/api/shared/${shareId}`;
+        res.json({ message: 'Receta compartida exitosamente.', shareUrl });
+    } catch (error) {
+        console.error('Error al compartir la receta:', error);
+        res.status(500).json({ error: 'Hubo un error al intentar compartir la receta.' });
+    }
+};
+
+export const getSharedRecipe = async (req, res) => {
+    const { shareId } = req.params;
+
+    try {
+        const recipe = await Recipe.findOne({ where: { shareId } });
+
+        if (!recipe) {
+            return res.status(404).render('404'); // Renderiza una vista de error 404 si la receta no se encuentra
+        }
+
+        // Renderiza la vista EJS con los datos de la receta
+        res.render('shared-recipe', { recipe });
+    } catch (error) {
+        console.error('Error al obtener la receta compartida:', error);
+        res.status(500).render('error', { message: 'Hubo un error al intentar obtener la receta.' });
+    }
+};
+
 
 
 export const deleteRecipe = async (req, res) => {

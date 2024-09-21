@@ -13,6 +13,7 @@ import { sequelize } from './config/db.js';
 import recipeRoutes from './routes/recipeRoutes.js';
 
 
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,6 +22,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+
+// Configurar EJS como motor de plantillas
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); // Ruta a la carpeta de vistas
+
+
 
 const hfInference = new HfInference(process.env.HF_TOKEN);
 
@@ -45,6 +53,7 @@ startServer();
 
 
 app.use('/api', recipeRoutes);
+
 
 // Rutas de autenticación
 app.use('/api/auth', authRoutes);
@@ -159,3 +168,8 @@ app.post('/generate-recipe', async (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+
+app.get('/*', function(req, res){
+    res.status(404).send('404');
+  });

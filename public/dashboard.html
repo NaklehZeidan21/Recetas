@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <title>Dashboard Recetas</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0px;
+        }
+        
+      .logo {
+    font-size: 36px;
+    font-weight: bold;
+    margin-right: auto; 
+    margin-top: 1vh;
+}
+
+        .main{
+            padding: 10px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+        #ingredients-container {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            
+        }
+
+        .card {
+            background-color: #858585;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+            height: auto;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card.selected {
+            background-color: #517741;
+
+        }
+
+        .emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .name {
+            font-size: 1rem;
+            color: #131212;
+        }
+
+        #generate-recipe {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            background-color: #517741;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #generate-recipe:hover {
+            background-color: #218838;
+        }
+
+        .ingredients-container {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center;
+    gap: 10px; 
+}
+        #recipe {
+            margin-top: 40px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        #recipe h2 {
+            color: #28a745;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        #recipe .title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        #recipe .ingredients,
+        #recipe .instructions {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        #loader {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #28a745;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+
+        #loader1 {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #28a745;
+            width: 10px;
+            height: 10px;
+            animation: spin 1s linear infinite;
+            margin-top: 2vh;
+        
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #add-ingredient-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .modal-content input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #517741;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #517741;
+        }
+
+        .modal-content .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        
+
+        .dropbtn{
+            
+            border-radius: 8px;
+            color: white;
+            padding: 10px;
+            background-color: #131212;
+        }
+
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            border: solid white 1px;
+            display: none;
+            position: absolute;
+            background-color: rgb(0, 0, 0);
+            min-width: 120px;
+            border-radius: 5px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            right: 0; /* Alinear a la derecha */
+        }
+
+        .dropdown-content a {
+            color: rgb(247, 247, 247);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #363535;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Añadir estilos para que se mantenga consistente con el diseño */
+        .user-icon {
+            font-size: 20px;
+            margin-right: 8px;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: flex-end;
+            padding: 8px;
+            background-color: #517741;
+            color: rgb(255, 255, 255);
+        }
+
+        .nav a {
+            color: rgb(242, 242, 242);
+            text-decoration: none;
+            padding: 10px;
+        }
+
+
+        .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.modal-content input[type="email"],
+.modal-content input[type="password"] {
+    margin-bottom: 15px; /* space between inputs */
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    color: black;
+    cursor: pointer;
+}
+
+      
+      #login, #register{
+        cursor: pointer;
+      }
+
+      main {
+            margin-top: 20px;
+        }
+
+        #recipe-list {
+            display: flex;
+            justify-content:center;
+            flex-wrap: wrap;
+            gap: 1vh;
+            padding:10px;
+        }
+        .recipe-card {
+    width: 200px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    margin: 10px; 
+}
+
+.recipe-card:hover {
+    transform: scale(1.05);
+}
+
+.recipe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recipe-card h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.delete-btn img {
+    width: 20px; 
+    height: 20px;
+    transition: transform 0.2s;
+}
+
+.delete-btn img:hover {
+    transform: scale(1.1);
+}
+
+.recipe-card p {
+    margin: 5px 0 0;
+    color: #555;
+    font-size: 14px; /* Ajustado para un mejor espaciado */
+}
+        .no-recipes {
+            text-align: center;
+            color: #777;
+        }
+
+        @media (max-width: 450px) {
+    .card {
+        width: 80px; 
+        height: auto;
+        display: inline-block; 
+        margin: 5px;
+    }
+}
+
+
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div id="loader1"></div>
+    
+        <!-- Contenedor del logo/título -->
+        <div class="logo">
+            Recetas IA 
+           <small> 🍳🤖📜</small>
+            
+            
+        </div>
+    
+        <div class="dropdown">
+            <button class="dropbtn" id="user-menu">
+                <i>👨🏻</i> Invitado
+                <i class="fa-solid fa-angle-down"></i>
+            </button>
+    
+            <div class="dropdown-content" id="dropdown-options">
+                <a id="login">Iniciar sesión</a>
+                <a id="register">Registrarse</a>
+            </div>
+        </div>
+    </nav>
+    
+
+   <!-- Modales de Login y Registro -->
+   <div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeLogin">&times;</span>
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Contraseña">
+        <button id="submitLogin">Ingresar</button>
+    </div>
+</div>
+
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeRegister">&times;</span>
+        <h2>Registrar</h2>
+        <input type="email" id="registerEmail" placeholder="Email">
+        <input type="password" id="registerPassword" placeholder="Contraseña">
+        <button id="submitRegister">Registrar</button>
+    </div>
+</div>
+
+
+<main>
+    <h2>Tus recetas:</h2>
+
+    <div id="recipe-list">
+        <!-- Las recetas se cargarán aquí -->
+    </div>
+    <p id="no-recipes" class="no-recipes" style="display: none;">No hay recetas disponibles.</p>
+</main>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showError("No has iniciado sesión. Por favor inicia sesión para generar una receta.");
+            // Redirigir después de 2 segundos
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        } else {
+            console.log("Token encontrado:", token); // Verifica que el token existe
+        }
+    });
+
+    // Definición de la función showError
+    function showError(message) {
+        const errorContainer = document.createElement('div');
+        errorContainer.style.position = 'fixed';
+        errorContainer.style.top = '10px';
+        errorContainer.style.left = '50%';
+        errorContainer.style.transform = 'translateX(-50%)';
+        errorContainer.style.backgroundColor = 'red';
+        errorContainer.style.color = 'white';
+        errorContainer.style.padding = '10px 20px';
+        errorContainer.style.borderRadius = '5px';
+        errorContainer.style.zIndex = '1000';
+        errorContainer.textContent = message;
+
+        document.body.appendChild(errorContainer);
+
+        // Quitar el mensaje después de 3 segundos
+        setTimeout(() => {
+            document.body.removeChild(errorContainer);
+        }, 3000);
+    }
+</script>
+
+
+<script>
+    // Función para extraer el email del token JWT
+function getUserEmailFromToken(token) {
+    const payloadBase64 = token.split('.')[1]; // Obtener el payload en Base64
+    const decodedPayload = atob(payloadBase64); // Decodificar Base64
+    const payloadObject = JSON.parse(decodedPayload); // Convertir a JSON
+    return payloadObject.email; // Devolver el email
+}
+
+// Función para eliminar receta por ID
+async function deleteRecipeById(recipeId) {
+    try {
+        const response = await fetch(`/api/recipes/${recipeId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            alert('Receta eliminada correctamente');
+            // Eliminar la tarjeta de receta del DOM
+            document.querySelector(`.recipe-card[data-id="${recipeId}"]`).remove();
+        } else {
+            alert('Error al eliminar la receta');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Esperar a que el DOM esté listo
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('token');
+    const userMenu = document.getElementById('user-menu');
+    const loginModal = document.getElementById('loginModal');
+    const registerModal = document.getElementById('registerModal');
+
+    if (token) {
+        // Obtener el email del token
+        const userEmail = getUserEmailFromToken(token);
+
+        // Actualizar el menú para mostrar el email del usuario
+        userMenu.innerHTML = `<i style="font-size:24px;" >👨🏻‍🍳</i> ${userEmail} <i class="fa-solid fa-angle-down"></i>`;
+        document.getElementById('dropdown-options').innerHTML = `
+            <a href="/" >Inicio</a>
+            <a href="#" id="logout">Salir</a>
+        `;
+
+        // Añadir manejador para el logout
+        document.getElementById('logout').addEventListener('click', function() {
+            localStorage.removeItem('token'); // Destruir token
+            location.reload();
+        });
+
+        // Obtener y mostrar recetas del usuario
+        fetch('/api/my-recipes', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar las recetas');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const recipeList = document.getElementById('recipe-list');
+            if (data.length === 0) {
+                document.getElementById('no-recipes').style.display = 'block';
+                return;
+            }
+
+            data.forEach(recipe => {
+                const recipeCard = document.createElement('div');
+                recipeCard.classList.add('recipe-card');
+                recipeCard.setAttribute('data-id', recipe.id);
+                recipeCard.innerHTML = `
+                    <h3>${recipe.title}</h3>
+                    <br>
+                    <img style="width:120px; height:120px;" src="${recipe.image}">
+                    
+                      <br>
+                      <br>
+                            <small>${recipe.createdAt}</small>
+                          
+                    <hr>                       
+                    <br><button class="delete-btn" data-recipe-id="${recipe.id}">Eliminar</button>
+                    <i class="delete-btn" data-recipe-id="${recipe.id}">🗑️</i>
+                `;
+                recipeList.appendChild(recipeCard);
+            });
+
+            // Añadir eventos a los botones de eliminar
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const recipeId = event.target.getAttribute('data-recipe-id');
+                    const confirmation = confirm('¿Estás seguro de que deseas eliminar esta receta?');
+                    if (confirmation && recipeId) {
+                        deleteRecipeById(recipeId);
+                    }
+                });
+            });
+        })
+        .catch(error => console.error('Error al cargar las recetas:', error));
+    } else {
+        // Mostrar menú para usuario invitado
+        userMenu.innerHTML = '<i style="font-size:24px;">👨🏻</i> Invitado <i class="fa-solid fa-angle-down"></i>';
+    }
+
+    // Mostrar modales de login y registro
+    document.getElementById('login').addEventListener('click', () => {
+        loginModal.style.display = 'block';
+    });
+
+    document.getElementById('register').addEventListener('click', () => {
+        registerModal.style.display = 'block';
+    });
+
+    // Cerrar los modales
+    document.getElementById('closeLogin').addEventListener('click', () => {
+        loginModal.style.display = 'none';
+    });
+
+    document.getElementById('closeRegister').addEventListener('click', () => {
+        registerModal.style.display = 'none';
+    });
+});
+
+</script>
+</body>
+</html>
+

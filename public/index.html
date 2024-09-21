@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <title>Generador de Recetas</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,17 +14,14 @@
             color: #333;
             text-align: center;
             margin: 0;
-            padding: 10px;
+            padding: 0px;
         }
-
-   
 
         h1 {
             font-size: 2.5rem;
             color: white;
             margin-bottom: 20px;
         }
-
         #ingredients-container {
             display: none;
             flex-wrap: wrap;
@@ -37,7 +35,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100px;
-            padding: 10px;
+            padding: 4px;
             cursor: pointer;
             text-align: center;
             transition: transform 0.2s;
@@ -84,8 +82,6 @@
     justify-content: center;
     gap: 10px; 
 }
-
-
         #recipe {
             margin-top: 40px;
             text-align: left;
@@ -126,6 +122,18 @@
             height: 60px;
             animation: spin 1s linear infinite;
             margin: 30px auto;
+        }
+
+        #loader1 {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #28a745;
+            width: 10px;
+            height: 10px;
+            animation: spin 1s linear infinite;
+            margin-top: 2vh;
+        
         }
 
         @keyframes spin {
@@ -185,7 +193,129 @@
             cursor: pointer;
         }
 
+        
+
+        .dropbtn{
+            
+            border-radius: 8px;
+            color: white;
+            padding: 10px;
+            background-color: #131212;
+        }
+
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            border: solid white 1px;
+            display: none;
+            position: absolute;
+            background-color: rgb(0, 0, 0);
+            min-width: 120px;
+            border-radius: 5px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            right: 0; /* Alinear a la derecha */
+        }
+
+        .dropdown-content a {
+            color: rgb(247, 247, 247);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #363535;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Añadir estilos para que se mantenga consistente con el diseño */
+        .user-icon {
+            font-size: 20px;
+            margin-right: 8px;
+            color: white;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: flex-end;
+            padding: 8px;
+            background-color: #517741;
+            color: rgb(255, 255, 255);
+        }
+
+        .nav a {
+            color: rgb(242, 242, 242);
+            text-decoration: none;
+            padding: 10px;
+        }
+
+
+        .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.modal-content input[type="email"],
+.modal-content input[type="password"] {
+    margin-bottom: 15px; /* space between inputs */
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    color: black;
+    cursor: pointer;
+}
+
       
+      #login, #register{
+        cursor: pointer;
+      }
+
+      .logo {
+    font-size: 36px;
+    font-weight: bold;
+    margin-right: auto; 
+    margin-top: 1vh;
+}
 
         @media (max-width: 450px) {
     .card {
@@ -201,209 +331,448 @@
 </head>
 <body>
 
-    <h1>Selecciona tus ingredientes</h1>
-    <p style="color: rgba(255, 255, 255, 0.66);">Generaremos una receta para ti:</p><br>
-    <div class="ingredients-container">
+    <div id="success-container"></div>
+      <div id="error-container"></div>
+      
+      <nav class="nav">
+        <div id="loader1"></div>
+    
+        <!-- Contenedor del logo/título -->
+        <div class="logo">
+            Recetas IA 
+           <small> 🍳🤖📜</small>
+            
+            
+        </div>
+    
+        <div class="dropdown">
+            <button class="dropbtn" id="user-menu">
+                <i>👨🏻</i> Invitado
+                <i class="fa-solid fa-angle-down"></i>
+            </button>
+    
+            <div class="dropdown-content" id="dropdown-options">
+                <a id="login">Iniciar sesión</a>
+                <a id="register">Registrarse</a>
+            </div>
+        </div>
+    </nav>
+    
+
+   <!-- Modales de Login y Registro -->
+   <div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeLogin">&times;</span>
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Contraseña">
+        <button id="submitLogin">Ingresar</button>
+    </div>
+</div>
+
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeRegister">&times;</span>
+        <h2>Registrar</h2>
+        <input type="email" id="registerEmail" placeholder="Email">
+        <input type="password" id="registerPassword" placeholder="Contraseña">
+        <button id="submitRegister">Registrar</button>
+    </div>
+</div>
+
+
+
+    <section class="main">
+        <h1>Selecciona tus ingredientes</h1>
+        <p style="color: rgba(255, 255, 255, 0.66);">La IA generará una receta para ti:</p><br>
+        <div class="ingredients-container">
+            
+    
+            <div class="card" id="add-ingredient">
+                <div class="emoji">➕</div>
+                <div style="font-size: 14px; " class="name">Agregar Ingrediente</div>
+            </div>
+    
+            <div  id="ingredients-container"></div>
+    
+    
+            <div class="card" data-ingredient="huevo">
+                <div class="emoji">🥚</div>
+                <div class="name">Huevo</div>
+            </div>
+    
+    
+            <div class="card" data-ingredient="tomate">
+                <div class="emoji">🍅</div>
+                <div class="name">Tomate</div>
+            </div>
+            <div class="card" data-ingredient="zanahoria">
+                <div class="emoji">🥕</div>
+                <div class="name">Zanahoria</div>
+            </div>
+            <div class="card" data-ingredient="queso">
+                <div class="emoji">🧀</div>
+                <div class="name">Queso</div>
+            </div>
+            <div class="card" data-ingredient="lechuga">
+                <div class="emoji">🥬</div>
+                <div class="name">Lechuga</div>
+            </div>
+            <div class="card" data-ingredient="pollo">
+                <div class="emoji">🍗</div>
+                <div class="name">Pollo</div>
+            </div>
+            <div class="card" data-ingredient="papa">
+                <div class="emoji">🥔</div>
+                <div class="name">Papa</div>
+            </div>
+            <div class="card" data-ingredient="aguacate">
+                <div class="emoji">🥑</div>
+                <div class="name">Aguacate</div>
+            </div>
+            <div class="card" data-ingredient="fresa">
+                <div class="emoji">🍓</div>
+                <div class="name">Fresa</div>
+            </div>
+            <div class="card" data-ingredient="manzana">
+                <div class="emoji">🍎</div>
+                <div class="name">Manzana</div>
+            </div>
+            <div class="card" data-ingredient="plátano">
+                <div class="emoji">🍌</div>
+                <div class="name">Plátano</div>
+            </div>
+            <div class="card" data-ingredient="piña">
+                <div class="emoji">🍍</div>
+                <div class="name">Piña</div>
+            </div>
+            <div class="card" data-ingredient="uvas">
+                <div class="emoji">🍇</div>
+                <div class="name">Uvas</div>
+            </div>
+            <div class="card" data-ingredient="sandía">
+                <div class="emoji">🍉</div>
+                <div class="name">Sandía</div>
+            </div>
         
-
-        <div class="card" id="add-ingredient">
-            <div class="emoji">➕</div>
-            <div style="font-size: 14px; " class="name">Agregar Ingrediente</div>
-        </div>
-
-        <div  id="ingredients-container"></div>
-
-
-        <div class="card" data-ingredient="huevo">
-            <div class="emoji">🥚</div>
-            <div class="name">Huevo</div>
-        </div>
-
-
-        <div class="card" data-ingredient="tomate">
-            <div class="emoji">🍅</div>
-            <div class="name">Tomate</div>
-        </div>
-        <div class="card" data-ingredient="zanahoria">
-            <div class="emoji">🥕</div>
-            <div class="name">Zanahoria</div>
-        </div>
-        <div class="card" data-ingredient="queso">
-            <div class="emoji">🧀</div>
-            <div class="name">Queso</div>
-        </div>
-        <div class="card" data-ingredient="lechuga">
-            <div class="emoji">🥬</div>
-            <div class="name">Lechuga</div>
-        </div>
-        <div class="card" data-ingredient="pollo">
-            <div class="emoji">🍗</div>
-            <div class="name">Pollo</div>
-        </div>
-        <div class="card" data-ingredient="papa">
-            <div class="emoji">🥔</div>
-            <div class="name">Papa</div>
-        </div>
-        <div class="card" data-ingredient="aguacate">
-            <div class="emoji">🥑</div>
-            <div class="name">Aguacate</div>
-        </div>
-        <div class="card" data-ingredient="fresa">
-            <div class="emoji">🍓</div>
-            <div class="name">Fresa</div>
-        </div>
-        <div class="card" data-ingredient="manzana">
-            <div class="emoji">🍎</div>
-            <div class="name">Manzana</div>
-        </div>
-        <div class="card" data-ingredient="plátano">
-            <div class="emoji">🍌</div>
-            <div class="name">Plátano</div>
-        </div>
-        <div class="card" data-ingredient="piña">
-            <div class="emoji">🍍</div>
-            <div class="name">Piña</div>
-        </div>
-        <div class="card" data-ingredient="uvas">
-            <div class="emoji">🍇</div>
-            <div class="name">Uvas</div>
-        </div>
-        <div class="card" data-ingredient="sandía">
-            <div class="emoji">🍉</div>
-            <div class="name">Sandía</div>
-        </div>
-    
-        <div class="card" data-ingredient="limón">
-            <div class="emoji">🍋</div>
-            <div class="name">Limón</div>
-        </div>
-    
-        <div class="card" data-ingredient="durazno">
-            <div class="emoji">🍑</div>
-            <div class="name">Durazno</div>
-        </div>
-        <div class="card" data-ingredient="maíz">
-            <div class="emoji">🌽</div>
-            <div class="name">Maíz</div>
-        </div>
-        <div class="card" data-ingredient="pan">
-            <div class="emoji">🍞</div>
-            <div class="name">Pan</div>
+            <div class="card" data-ingredient="limón">
+                <div class="emoji">🍋</div>
+                <div class="name">Limón</div>
+            </div>
+        
+            <div class="card" data-ingredient="durazno">
+                <div class="emoji">🍑</div>
+                <div class="name">Durazno</div>
+            </div>
+            <div class="card" data-ingredient="maíz">
+                <div class="emoji">🌽</div>
+                <div class="name">Maíz</div>
+            </div>
+            <div class="card" data-ingredient="pan">
+                <div class="emoji">🍞</div>
+                <div class="name">Pan</div>
+            </div>
+        
+        
+            <div class="card" data-ingredient="arroz">
+                <div class="emoji">🍚</div>
+                <div class="name">Arroz</div>
+            </div>
+        
+        
+            <div class="card" data-ingredient="chocolate">
+                <div class="emoji">🍫</div>
+                <div class="name">Chocolate</div>
+            </div>
+            <div class="card" data-ingredient="carne">
+                <div class="emoji">🥩</div>
+                <div class="name">Carne</div>
+            </div>
+            <div class="card" data-ingredient="pescado">
+                <div class="emoji">🐟</div>
+                <div class="name">Pescado</div>
+            </div>
+            <div class="card" data-ingredient="langosta">
+                <div class="emoji">🦞</div>
+                <div class="name">Langosta</div>
+            </div>
+            <div class="card" data-ingredient="pulpo">
+                <div class="emoji">🐙</div>
+                <div class="name">Pulpo</div>
+            </div>
+            <div class="card" data-ingredient="camaron">
+                <div class="emoji">🍤</div>
+                <div class="name">Camarón</div>
+            </div>
+        
+            <div class="card" data-ingredient="chili">
+                <div class="emoji">🌶️</div>
+                <div class="name">Chili</div>
+            </div>
+        
+            <div class="card" data-ingredient="miel">
+                <div class="emoji">🍯</div>
+                <div class="name">Miel</div>
+            </div>
+            <div class="card" data-ingredient="pimiento">
+                <div class="emoji">🫑</div>
+                <div class="name">Pimiento</div>
+            </div>
+            <div class="card" data-ingredient="pepino">
+                <div class="emoji">🥒</div>
+                <div class="name">Pepino</div>
+            </div>
+            <div class="card" data-ingredient="berenjena">
+                <div class="emoji">🍆</div>
+                <div class="name">Berenjena</div>
+            </div>
+            <div class="card" data-ingredient="calabaza">
+                <div class="emoji">🎃</div>
+                <div class="name">Calabaza</div>
+            </div>
+            <div class="card" data-ingredient="mango">
+                <div class="emoji">🥭</div>
+                <div class="name">Mango</div>
+            </div>
         </div>
     
+        <button id="generate-recipe" style="width: 50vh;">Generar Receta</button>
     
-        <div class="card" data-ingredient="arroz">
-            <div class="emoji">🍚</div>
-            <div class="name">Arroz</div>
-        </div>
-    
-    
-        <div class="card" data-ingredient="chocolate">
-            <div class="emoji">🍫</div>
-            <div class="name">Chocolate</div>
-        </div>
-        <div class="card" data-ingredient="carne">
-            <div class="emoji">🥩</div>
-            <div class="name">Carne</div>
-        </div>
-        <div class="card" data-ingredient="pescado">
-            <div class="emoji">🐟</div>
-            <div class="name">Pescado</div>
-        </div>
-        <div class="card" data-ingredient="langosta">
-            <div class="emoji">🦞</div>
-            <div class="name">Langosta</div>
-        </div>
-        <div class="card" data-ingredient="pulpo">
-            <div class="emoji">🐙</div>
-            <div class="name">Pulpo</div>
-        </div>
-        <div class="card" data-ingredient="camaron">
-            <div class="emoji">🍤</div>
-            <div class="name">Camarón</div>
-        </div>
-    
-        <div class="card" data-ingredient="chili">
-            <div class="emoji">🌶️</div>
-            <div class="name">Chili</div>
-        </div>
-    
-        <div class="card" data-ingredient="miel">
-            <div class="emoji">🍯</div>
-            <div class="name">Miel</div>
-        </div>
-        <div class="card" data-ingredient="pimiento">
-            <div class="emoji">🫑</div>
-            <div class="name">Pimiento</div>
-        </div>
-        <div class="card" data-ingredient="pepino">
-            <div class="emoji">🥒</div>
-            <div class="name">Pepino</div>
-        </div>
-        <div class="card" data-ingredient="berenjena">
-            <div class="emoji">🍆</div>
-            <div class="name">Berenjena</div>
-        </div>
-        <div class="card" data-ingredient="calabaza">
-            <div class="emoji">🎃</div>
-            <div class="name">Calabaza</div>
-        </div>
-        <div class="card" data-ingredient="mango">
-            <div class="emoji">🥭</div>
-            <div class="name">Mango</div>
-        </div>
-    </div>
-
-    <button id="generate-recipe">Generar Receta</button>
-
-    <div style="display: flex; justify-content: center;">
-        <i id="refresh-button" style="font-size: 22px; padding: 10px; cursor: pointer;" class="fas fa-sync"></i>
-
-    </div>
-    
-
-    <!-- Loader -->
-    <div id="loader"></div>
-
-    
-    <!-- Contenedor para la receta -->
-    <div id="recipe"></div>
-    
-    <div id="recipe-image" style="display: none;">
-        <h3 style="color: #f3f3f3;">Imagen Generada:</h3>
         <div style="display: flex; justify-content: center;">
-            <img id="recipe-image-img" alt="Imagen de la receta" style="max-width: 100%; border-radius: 10px;">
-        </div>
-    </div>
+            <i id="refresh-button" style="font-size: 22px; padding: 10px; cursor: pointer;" class="fas fa-sync"></i>
     
-    
-
-    <!-- Modal para agregar ingredientes personalizados -->
-    <div id="add-ingredient-modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Agregar Ingrediente Personalizado</h2>
-            <input type="text" id="new-ingredient-name" placeholder="Nombre del ingrediente">
-           <!-- <input type="text" id="new-ingredient-emoji" placeholder="Emoji del ingrediente" disabled value="😊">
-        --> 
-           <button id="add-ingredient-button">Agregar Ingrediente</button>
         </div>
-    </div>
+        
+    
+        <!-- Loader -->
+        <div id="loader"></div>
+    
+        
+        <!-- Contenedor para la receta -->
+        <div id="recipe"></div>
+        
+        <div id="recipe-image" style="display: none;">
+            <h3 style="color: #f3f3f3;">Imagen Generada:</h3>
+            <div style="display: flex; justify-content: center;">
+                <img id="recipe-image-img" alt="Imagen de la receta" style="max-width: 100%; border-radius: 10px;">
+            </div>
+        </div>
+        
+        
+    
+        <!-- Modal para agregar ingredientes personalizados -->
+        <div id="add-ingredient-modal">
+            <div class="modal-content">
+                <span class="close" id="closeAddIngredient">&times;</span> <!-- Cambiado a id -->
+                <h2>Ingrediente Personalizado</h2>
+                <input type="text" id="new-ingredient-name" placeholder="Nombre del ingrediente">
+               <!-- <input type="text" id="new-ingredient-emoji" placeholder="Emoji del ingrediente" disabled value="😊">
+            --> 
+               <button id="add-ingredient-button">Agregar Ingrediente</button>
+            </div>
+        </div>
+    
+    </section>
 
-    <script>
+    
+<script>
+// login y register 
+// Manejar Login
+document.getElementById('submitLogin').addEventListener('click', async function () {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+            }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+           // alert('Login exitoso');
+           showSuccess("ok")
+            // Guarda el token o redirige si es necesario
+            console.log('Token:', data.token);
+            // Por ejemplo, guardar el token en localStorage
+            localStorage.setItem('token', data.token);
+            
+            loginModal.style.display = 'none';
+            document.getElementById('loader1').style.display = 'block';
+
+            const cards = document.getElementsByClassName('card');
+
+
+            
+           location.reload();  // Recarga la página
+
+           //  nice animtaion
+
+           // Función para pausar la ejecución por la cantidad de tiempo especificada
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function animateCards() {
+    const cards = document.getElementsByClassName('card');
+
+    for (let i = 0; i < cards.length; i++) {
+        cards[i].style.transform = 'translateY(-3px)';  // Aplica el estilo a cada card
+        await sleep(400);  // Pausa 0.2 segundos (200 ms)
+    }
+}
+
+// Llama a la función para comenzar la animación con retrasos
+animateCards();
+
+
+
+        } else {
+            showError("Error en el login")
+          //  alert(data.message || 'Error en el login');
+            showError(data.message || 'Error en el login');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        //alert('Hubo un error en la solicitud');
+        showError('Hubo un error en la solicitud');
+
+    }
+});
+
+// Manejar Registro
+document.getElementById('submitRegister').addEventListener('click', async function () {
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+            }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            //  alert('Registro exitoso');
+              showSuccess("Registro exitoso")
+            // showError("Registro exitoso")
+            
+            //showSuccess("Registro exitoso")
+
+            // Guarda el token o redirige si es necesario
+            // pop login 
+                const loginModal = document.getElementById('loginModal');
+                const registerModal = document.getElementById('registerModal');
+                registerModal.style.display = 'none';
+                document.getElementById('registerEmail').value = '';
+                document.getElementById('registerPassword').value = '';
+                loginModal.style.display= 'block';
+            
+            
+        } else {
+            alert(data.message || 'Error en el registro');
+            showError(data.message || 'Error en el registro');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Hubo un error en la solicitud');
+        showError("Hubo un error en la solicitud")
+    }
+});
+
+
+</script>
+
+<script>
+    // Función para extraer el email del token JWT
+    function getUserEmailFromToken(token) {
+        const payloadBase64 = token.split('.')[1]; // Obtener el payload en Base64
+        const decodedPayload = atob(payloadBase64); // Decodificar Base64
+        const payloadObject = JSON.parse(decodedPayload); // Convertir a JSON
+        return payloadObject.email; // Devolver el email (según el contenido del token)
+    }
+
+    // Esperar a que el DOM esté listo
+    document.addEventListener("DOMContentLoaded", function() {
+        const token = localStorage.getItem('token');
+        const userMenu = document.getElementById('user-menu');
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+
+        if (token) {
+            // Obtener el email del token
+            const userEmail = getUserEmailFromToken(token);
+
+            // Actualizar el menú para mostrar el email del usuario
+            userMenu.innerHTML = `<i style="font-size:24px;" >👨🏻‍🍳</i> ${userEmail} <i class="fa-solid fa-angle-down"></i>`;
+
+            document.getElementById('dropdown-options').innerHTML = `
+                <a href="#" id="myRecipesLink">Recetas</a>
+                <a href="#" id="logout">Salir</a>
+            `;
+
+            // Añadir manejador para el logout
+            document.getElementById('logout').addEventListener('click', function() {
+                localStorage.removeItem('token'); //destroy 
+                
+                location.reload();
+            });
+        } else {
+            // Mostrar menú para usuario invitado
+            userMenu.innerHTML = '<i style="font-size:24px;">👨🏻</i> Invitado <i class="fa-solid fa-angle-down"></i>';
+        }
+
+        // Mostrar modales de login y registro
+        document.getElementById('login').addEventListener('click', function() {
+            loginModal.style.display = 'block';
+        });
+
+        document.getElementById('register').addEventListener('click', function() {
+            registerModal.style.display = 'block';
+        });
+
+        // Cerrar los modales
+        document.getElementById('closeLogin').addEventListener('click', function() {
+            loginModal.style.display = 'none';
+        });
+
+        document.getElementById('closeRegister').addEventListener('click', function() {
+            registerModal.style.display = 'none';
+        });
+    });
+</script>
+
+
+
+
+   <script>
+
         const selectedIngredients = [];
-        const ingredientContainer = document.getElementById('ingredients-container');
     
-        // Mostrar 
-        document.getElementById('add-ingredient').addEventListener('click', () => {
-            document.getElementById('add-ingredient-modal').style.display = 'flex';
-        });
-    
-        // Cerrar
-                document.querySelector('.modal-content .close').addEventListener('click', () => {
-            document.getElementById('add-ingredient-modal').style.display = 'none';
-        });
-    
+    document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar el modal de agregar ingrediente
+    document.getElementById('add-ingredient').addEventListener('click', () => {
+        document.getElementById('add-ingredient-modal').style.display = 'flex';
+    });
+
+    // Cerrar el modal de agregar ingrediente
+    document.getElementById('closeAddIngredient').addEventListener('click', () => {
+        document.getElementById('add-ingredient-modal').style.display = 'none';
+    });
+});
+
 
         document.addEventListener('DOMContentLoaded', () => {
     const ingredientContainer = document.getElementById('ingredients-container');
@@ -463,67 +832,112 @@
     });
 });
 
-        // Generar receta
-        document.getElementById('generate-recipe').addEventListener('click', async () => {
-            if (selectedIngredients.length < 5) {
-                alert('Por favor selecciona al menos 5 ingredientes.');
-                return;
-            }
-    
-            document.getElementById('loader').style.display = 'block';
-            window.scrollBy({
-            top: 120,
-            behavior: 'smooth'
+
+
+
+
+
+
+
+
+
+
+// Generar receta
+document.getElementById('generate-recipe').addEventListener('click', async () => {
+    if (selectedIngredients.length < 5) {
+        showError("Por favor selecciona al menos 5 ingredientes");
+        return;
+    }
+
+    document.getElementById('loader').style.display = 'block';
+    window.scrollBy({
+        top: 120,
+        behavior: 'smooth'
+    });
+
+    try {
+        // Verifica si el token está en localStorage
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showError("No has iniciado sesión. Por favor inicia sesión para generar una receta.");
+            document.getElementById('loader').style.display = 'none';
+            return;
+        }
+
+        // Hacer la petición a la API con el token en el header Authorization
+        const response = await fetch('/api/generate-recipe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Agrega el token en el header Authorization
+            },
+            body: JSON.stringify({ selectedIngredients }),
         });
-    
-            try {
-                const response = await fetch('/generate-recipe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ selectedIngredients }),
-                });
-    
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-    
-                const data = await response.json();
-                document.getElementById('recipe').style.display = 'block';
-    
-                const recipeContainer = document.getElementById('recipe');
-                const recipeImage = document.getElementById('recipe-image');
-                const imageElement = document.getElementById('recipe-image-img');
-    
-                const { title, ingredients, instructions, image } = data;
-    
-                recipeContainer.innerHTML = `
-                    <h2 class="title">${title}</h2>
-                    <div class="ingredients">
-                        <strong>Ingredientes:</strong>
-                        <ul>${ingredients.map(ingredient => `<li><strong>${ingredient.nombre}:</strong> ${ingredient.cantidad}</li>`).join('')}</ul>
-                    </div>
-                    <div class="instructions">
-                        <strong>Instrucciones:</strong>
-                        <ul>${instructions.map((instruction, index) => `<li> ${instruction}</li>`).join('')}</ul>
-                    </div>
-                `;
-    
-                if (image) {
-                    imageElement.src = `${image}`;
-                    recipeImage.style.display = 'block';
-                } else {
-                    recipeImage.style.display = 'none';
-                }
-    
-            } catch (error) {
-                console.error('Error:', error);
-            } finally {
-                document.getElementById('loader').style.display = 'none';
-            }
-        });
-    
+
+        if (!response.ok) {
+            
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+            showError(`Error ${response.status}: ${response.statusText} - ${errorText}`);
+
+        }
+
+
+        const data = await response.json();
+document.getElementById('recipe').style.display = 'block';
+
+const recipeContainer = document.getElementById('recipe');
+const recipeImage = document.getElementById('recipe-image');
+const imageElement = document.getElementById('recipe-image-img');
+
+const { title, ingredients: ingredientsString, instructions: instructionsString, image } = data.recipe;
+
+// Deserializar ingredientes e instrucciones
+const ingredients = JSON.parse(ingredientsString);
+const instructions = JSON.parse(instructionsString);
+
+recipeContainer.innerHTML = `
+    <h2 class="title">${title}</h2>
+    <div class="ingredients">
+        <strong>Ingredientes:</strong>
+        <ul>${ingredients.map(ingredient => `<li><strong>${ingredient.nombre}:</strong> ${ingredient.cantidad}</li>`).join('')}</ul>
+    </div>
+    <div class="instructions">
+        <strong>Instrucciones:</strong>
+        <ul>${instructions.map((instruction, index) => `<li>${instruction}</li>`).join('')}</ul>
+    </div>
+`;
+
+if (image) {
+    imageElement.src = `${image}`;
+    recipeImage.style.display = 'block';
+} else {
+    recipeImage.style.display = 'none';
+}
+
+
+    } catch (error) {
+        console.error('Error:', error);
+    } finally {
+        document.getElementById('loader').style.display = 'none';
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // Función para alternar la selección de ingredientes
         function toggleIngredientSelection(card) {
             const ingredient = card.dataset.ingredient;
@@ -553,5 +967,112 @@
     </script>
     
         
+    <script>
+        const token = localStorage.getItem('token');
+      
+        if (token) {
+          document.addEventListener('DOMContentLoaded', () => {
+            const links = document.getElementsByTagName('a');
+      
+            for (let i = 0; i < links.length; i++) {
+              links[i].addEventListener('click', (event) => {
+                if (event.target.href.startsWith(window.location.origin)) {
+                  event.preventDefault();
+      
+                  fetch("/my-recipes", {
+                    method: 'GET',
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  })
+                  .then(response => {
+                    if (response.ok) {
+                      showSuccess('Redirigiendo al dashboard...');  // Muestra mensaje de éxito
+                      setTimeout(() => {
+                        window.location.href = '/dashboard.html';  // Redirigir después de un tiempo
+                      }, 1000);  // Retraso de 1 segundo para mostrar el mensaje de éxito
+                    } else if (response.status === 401) {
+                      showError('No autorizado. Por favor, inicia sesión nuevamente.');
+                    } else if (response.status === 403) {
+                      showError('Acceso prohibido. No tienes permiso para acceder.');
+                    } else {
+                      showError('Error al cargar la página. Inténtalo más tarde.');
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Network Error:', error);
+                    showError('Error de red. Verifica tu conexión e inténtalo de nuevo.');
+                  });
+                }
+              });
+            }
+          });
+        }
+      
+        // Función para mostrar mensajes de éxito en el DOM y ocultarlos después de 2 segundos
+        function showSuccess(message) {
+          let successContainer = document.getElementById('success-container');
+          if (successContainer) {
+            successContainer = document.createElement('div');
+            successContainer.id = 'success-container';
+            successContainer.style.backgroundColor = '#4caf50'; // Fondo verde
+            successContainer.style.color = 'white';
+            successContainer.style.padding = '15px'; // Aumenta el padding
+            successContainer.style.marginTop = '10px';
+            successContainer.style.borderRadius = '5px';
+            successContainer.style.fontSize = '18px'; // Aumenta el tamaño de la fuente
+            successContainer.style.fontWeight = 'bold';
+            successContainer.style.textAlign = 'center';
+            successContainer.style.position = 'fixed';
+            successContainer.style.top = '20px';
+            successContainer.style.left = '50%';
+            successContainer.style.transform = 'translateX(-50%)';
+            successContainer.style.zIndex = '1000';
+            successContainer.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)'; // Agrega sombra
+            document.body.prepend(successContainer);
+          }
+          successContainer.innerText = message;
+      
+          // Mostrar el mensaje y luego ocultarlo
+          successContainer.style.display = 'block';
+          setTimeout(() => {
+            successContainer.style.display = 'none';
+          }, 3000);
+        }
+      
+        // Función para mostrar mensajes de error en el DOM y ocultarlos después de 2 segundos
+        function showError(message) {
+          let errorContainer = document.getElementById('error-container');
+          if (errorContainer) {
+            errorContainer = document.createElement('div');
+            errorContainer.id = 'error-container';
+            errorContainer.style.backgroundColor = '#f44336'; // Fondo rojo
+            errorContainer.style.color = 'white';
+            errorContainer.style.padding = '15px'; // Aumenta el padding
+            errorContainer.style.marginTop = '10px';
+            errorContainer.style.borderRadius = '5px';
+            errorContainer.style.fontSize = '18px'; // Aumenta el tamaño de la fuente
+            errorContainer.style.fontWeight = 'bold';
+            errorContainer.style.textAlign = 'center';
+            errorContainer.style.position = 'fixed';
+            errorContainer.style.top = '20px';
+            errorContainer.style.left = '50%';
+            errorContainer.style.transform = 'translateX(-50%)';
+            errorContainer.style.zIndex = '1000';
+            errorContainer.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)'; // Agrega sombra
+            document.body.prepend(errorContainer);
+          }
+          errorContainer.innerText = message;
+      
+          // Mostrar el mensaje y luego ocultarlo
+          errorContainer.style.display = 'block';
+          setTimeout(() => {
+            errorContainer.style.display = 'none';
+          }, 3000);
+        }
+      </script>
+      
+  
+
 </body>
 </html>
